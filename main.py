@@ -1,16 +1,22 @@
-# This is a sample Python script.
+# main.py
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+import sys
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def main(input_file):
+    with open(input_file, 'r') as f:
+        contents = f.read()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    # Split contents by whitespace to get tokens
+    tokens = contents.split()
+
+    # Process tokens
+    for token in tokens:
+        print(token)  # Replace with actual processing logic
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python main.py <input_file>")
+    else:
+        main(sys.argv[1])
