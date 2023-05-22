@@ -17,6 +17,6 @@ def main(input_file):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python main.py <input_file>")
+        print("Usage: python3 main.py <input_file>")
     else:
         main(sys.argv[1])
