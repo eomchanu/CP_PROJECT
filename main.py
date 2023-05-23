@@ -38,16 +38,18 @@ def main(input_file):
 
         # Get action from SLR parsing table
         action = parse_table.loc[current_state, next_input_symbol]
+
+        if action == "acc":  # Accept
+            print("Accept")
+            break
+
         action_type = action[0]
-        action_number = action_type == 'a' ? int(action[1:]) :
+        action_number = int(action[1:])
 
         if action_type == 's':  # Shift
             shift_func(action_number, stack, buffer)
         elif action_type == 'r':  # Reduce
             reduce_func(action_number, stack)
-        elif action == "acc":  # Accept
-            print("Accept")
-            break
         else:  # Error
             print("Parsing failed.")
             # print(f, "{next_input_symbol} has error.")
