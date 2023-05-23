@@ -4,6 +4,14 @@ import sys
 import pandas as pd
 from dataclasses import dataclass
 
+
+# Get SLR parse table
+parse_table = pd.read_excel(io='SLR_table.xlsx', sheet_name='SLR_parse_table', index_col=0)
+
+# Get production table
+production_table = pd.read_excel(io='SLR_table.xlsx', sheet_name='Productions', index_col=0, usecols='A,C:E')
+
+
 def main(input_file):
     # Get tokens from input file and tokenize
     with open(input_file, 'r') as f:
@@ -12,15 +20,64 @@ def main(input_file):
     # Split contents by whitespace to get tokens
     tokens = contents.split()
 
-    # # Process tokens
-    # for token in tokens:
-    #     print(token)  # Replace with actual processing logic
+    # Process tokens
+    # Replace with actual processing logic
+    for token in tokens:
+        print(token)
 
-    # Get production table
-    production_table = pd.read_excel(io='SLR_table.xlsx', sheet_name='Productions', index_col=0, usecols='A,C:E')
+    # print(parse_table)
+    # Initialize stack and buffer
+    stack = [0]
+    buffer = tokens + ["$"]
 
-    # Get SLR parse table
-    parse_table = pd.read_excel(io='SLR_table.xlsx', sheet_name='SLR_parse_table', index_col=0)
+    # Parsing
+    while True:
+        # Get current state and next input symbol
+        current_state = stack[-1]
+        next_input_symbol = buffer[0]
+
+        # Get action from SLR parsing table
+        action = parse_table.loc[current_state, next_input_symbol]
+        action_type = action[0]
+        action_number = int(action[1:])
+
+        if action_type == 's':  # Shift
+            shift_func(action_number, stack, buffer)
+        elif action_type == 'r':  # Reduce
+            reduce_func(action_number, stack)
+        elif action == 'acc':  # Accept
+            print("Parsing succeeded.")
+            break
+        else:  # Error
+            print("Parsing failed.")
+            # print(f, "{next_input_symbol} has error.")
+            break
+
+
+def shift_func(action_number, stack, buffer):
+    # Append the state number to the stack
+    stack.append(action_number)
+
+    # Move the spliter
+    # Remove the first symbol from the buffer
+    buffer.pop(0)
+
+
+def reduce_func(action_number, stack):
+    # Get the production rule to be reduced
+    production = production_table.loc[action_number]
+    # Get the production's length to pop states from stack
+    production_len = len(production['RHS'].split())
+    if production['RHS'] == "''":
+        production_len = 0
+
+    # Remove state from the stack
+    if production_len != 0:
+        for _ in range(production_len):
+            stack.pop()
+
+    next_state = parse_table.loc[stack[-1], production['LHS']]
+    stack.append(next_state)
 
 
 if __name__ == "__main__":
