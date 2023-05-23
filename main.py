@@ -39,14 +39,14 @@ def main(input_file):
         # Get action from SLR parsing table
         action = parse_table.loc[current_state, next_input_symbol]
         action_type = action[0]
-        action_number = int(action[1:])
+        action_number = action_type == 'a' ? int(action[1:]) :
 
         if action_type == 's':  # Shift
             shift_func(action_number, stack, buffer)
         elif action_type == 'r':  # Reduce
             reduce_func(action_number, stack)
-        elif action == 'acc':  # Accept
-            print("Parsing succeeded.")
+        elif action == "acc":  # Accept
+            print("Accept")
             break
         else:  # Error
             print("Parsing failed.")
@@ -65,10 +65,12 @@ def shift_func(action_number, stack, buffer):
 
 def reduce_func(action_number, stack):
     # Get the production rule to be reduced
-    production = production_table.loc[action_number]
+    production_RHS = production_table.loc[action_number, 'RHS']
+    production_LHS = production_table.loc[action_number, 'LHS']
+
     # Get the production's length to pop states from stack
-    production_len = len(production['RHS'].split())
-    if production['RHS'] == "''":
+    production_len = len(production_RHS.split())
+    if production_RHS == "''":
         production_len = 0
 
     # Remove state from the stack
@@ -76,7 +78,7 @@ def reduce_func(action_number, stack):
         for _ in range(production_len):
             stack.pop()
 
-    next_state = parse_table.loc[stack[-1], production['LHS']]
+    next_state = parse_table.loc[stack[-1], production_LHS]
     stack.append(next_state)
 
 
