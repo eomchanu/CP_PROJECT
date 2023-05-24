@@ -4,7 +4,6 @@ import sys
 import pandas as pd
 from anytree import Node, RenderTree
 
-
 # Get SLR parse table
 parse_table = pd.read_excel(io='SLR_table.xlsx', sheet_name='SLR_parse_table', index_col=0)
 
@@ -20,15 +19,12 @@ def main(input_file):
     # Split contents by whitespace to get tokens
     tokens = contents.split()
 
-    # Process tokens
-    # Replace with actual processing logic
-    for token in tokens:
-        print(token)
-
     # print(parse_table)
-    # Initialize stack and buffer
+    # Initialize state stack and buffer
     state_stack = [0]
     buffer = tokens + ["$"]
+
+    # Initialize node stack
     node_stack = []
 
     # Parsing
@@ -84,16 +80,20 @@ def reduce_func(action_number, state_stack, node_stack):
     production_LHS = production_table.loc[action_number, 'LHS']
     production_len = production_table.loc[action_number, 'n']
 
+    # Create a new parent node
     parent = Node(production_LHS)
 
+    # Add epsilon node if RHS is ''
     if production_RHS == "''":
         Node("ε", parent=parent)
-    # Remove state from the stack
+
+    # Remove state from the state_stack and link child nodes with parent node
     for _ in range(production_len):
         state_stack.pop()
         node_stack[-1].parent = parent
         node_stack.pop()
 
+    # Append current parent node to the stack (current parent node also can be child node)
     node_stack.append(parent)
 
     # GOTO func.
