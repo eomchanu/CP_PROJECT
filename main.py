@@ -75,7 +75,6 @@ def shift_func(action_number, state_stack, buffer, node_stack):
 
 
 def reduce_func(action_number, state_stack, node_stack):
-
     # Get the production rule to be reduced
     production_RHS = production_table.loc[action_number, 'RHS']
     production_LHS = production_table.loc[action_number, 'LHS']
@@ -90,7 +89,7 @@ def reduce_func(action_number, state_stack, node_stack):
 
     # Remove state from the state_stack and link child nodes with parent node
     for _ in range(production_len):
-        if state_stack:  # Check if the stack is not empty
+        if state_stack or node_stack:  # Check if the stack is not empty
             state_stack.pop()
             node_stack[-1].parent = parent
             node_stack.pop()
@@ -105,7 +104,7 @@ def reduce_func(action_number, state_stack, node_stack):
         print("Error: Trying to pop from an empty stack!", file=sys.stderr)
         return
 
-    # GOTO func.
+    # GOTO Action
     next_state = parse_table.loc[state_stack[-1], production_LHS]
     state_stack.append(next_state)
 
