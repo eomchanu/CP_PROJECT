@@ -3,7 +3,6 @@
 import sys
 import pandas as pd
 from anytree import Node, RenderTree
-from dataclasses import dataclass
 
 
 # Get SLR parse table
