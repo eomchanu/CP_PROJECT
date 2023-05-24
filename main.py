@@ -59,18 +59,19 @@ def main(input_file):
         action_number = int(action[1:])
 
         if action_type == 's':  # Shift
-            shift_func(action_number, stack, buffer, node_stack)
+            shift_func(action_number, state_stack, buffer, node_stack)
         elif action_type == 'r':  # Reduce
-            reduce_func(action_number, stack, node_stack)
+            reduce_func(action_number, state_stack, node_stack)
         else:  # Error
             print("Parsing failed. Check SLR Parsing Table.")
             break
 
 
-def shift_func(action_number, stack, buffer, node_stack):
+def shift_func(action_number, state_stack, buffer, node_stack):
     # Append the state number to the stack
     state_stack.append(action_number)
 
+    # Append the current node to the stack
     node_stack.append(Node(buffer[0]))
 
     # Move the spliter
@@ -78,20 +79,21 @@ def shift_func(action_number, stack, buffer, node_stack):
     buffer.pop(0)
 
 
-def reduce_func(action_number, stack, node_stack):
+def reduce_func(action_number, state_stack, node_stack):
     # Get the production rule to be reduced
+    production_RHS = production_table.loc[action_number, 'RHS']
     production_LHS = production_table.loc[action_number, 'LHS']
     production_len = production_table.loc[action_number, 'n']
 
-
     parent = Node(production_LHS)
 
+    if production_RHS == "''":
+        Node("ε", parent=parent)
     # Remove state from the stack
-    if production_len != 0:
-        for _ in range(production_len):
-            stack.pop()
-            node_stack[-1].parent = parent
-            node_stack.pop()
+    for _ in range(production_len):
+        state_stack.pop()
+        node_stack[-1].parent = parent
+        node_stack.pop()
 
     node_stack.append(parent)
 
