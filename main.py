@@ -28,18 +28,26 @@ def main(input_file):
 
     # print(parse_table)
     # Initialize stack and buffer
-    stack = [0]
+    state_stack = [0]
     buffer = tokens + ["$"]
     node_stack = []
 
     # Parsing
     while True:
         # Get current state and next input symbol
-        current_state = stack[-1]
+        current_state = state_stack[-1]
         next_input_symbol = buffer[0]
 
         # Get action from SLR parsing table
         action = parse_table.loc[current_state, next_input_symbol]
+
+        # If action is None or NaN
+        if pd.isnull(action):
+            # update bug report soon
+            print(f"REJECT!! Can't look up [{current_state},{next_input_symbol}] on SLR parsing table.")
+            break
+
+        print(action)
 
         if action == "acc":  # Accept
             print("Accept")
@@ -55,14 +63,13 @@ def main(input_file):
         elif action_type == 'r':  # Reduce
             reduce_func(action_number, stack, node_stack)
         else:  # Error
-            print("Parsing failed.")
-            # print(f, "{next_input_symbol} has error.")
+            print("Parsing failed. Check SLR Parsing Table.")
             break
 
 
 def shift_func(action_number, stack, buffer, node_stack):
     # Append the state number to the stack
-    stack.append(action_number)
+    state_stack.append(action_number)
 
     node_stack.append(Node(buffer[0]))
 
@@ -73,13 +80,9 @@ def shift_func(action_number, stack, buffer, node_stack):
 
 def reduce_func(action_number, stack, node_stack):
     # Get the production rule to be reduced
-    production_RHS = production_table.loc[action_number, 'RHS']
     production_LHS = production_table.loc[action_number, 'LHS']
+    production_len = production_table.loc[action_number, 'n']
 
-    # Get the production's length to pop states from stack
-    production_len = len(production_RHS.split())
-    if production_RHS == "''":
-        production_len = 0
 
     parent = Node(production_LHS)
 
@@ -92,8 +95,9 @@ def reduce_func(action_number, stack, node_stack):
 
     node_stack.append(parent)
 
-    next_state = parse_table.loc[stack[-1], production_LHS]
-    stack.append(next_state)
+    # GOTO func.
+    next_state = parse_table.loc[state_stack[-1], production_LHS]
+    state_stack.append(next_state)
 
 
 if __name__ == "__main__":
