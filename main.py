@@ -19,13 +19,15 @@ def main(input_file):
     # Split contents by whitespace to get tokens
     tokens = contents.split()
 
-    # print(parse_table)
     # Initialize state stack and buffer
     state_stack = [0]
     buffer = tokens + ["$"]
 
     # Initialize node stack
     node_stack = []
+
+    # Count number of input token
+    cnt = 1
 
     # Parsing
     while True:
@@ -38,14 +40,11 @@ def main(input_file):
 
         # If action is None or NaN
         if pd.isnull(action):
-            # update bug report soon
-            print(f"REJECT!! Can't look up [{current_state},{next_input_symbol}] on SLR parsing table.")
+            print(f"REJECT!! Error detected at token{cnt} : {next_input_symbol}")
             break
 
-        print(action)
-
         if action == "acc":  # Accept
-            print("Accept")
+            print("ACCEPT!!")
             for pre, _, node in RenderTree(node_stack[-1]):
                 print(f'{pre}{node.name}')
             break
@@ -55,6 +54,7 @@ def main(input_file):
 
         if action_type == 's':  # Shift
             shift_func(action_number, state_stack, buffer, node_stack)
+            cnt += 1
         elif action_type == 'r':  # Reduce
             reduce_func(action_number, state_stack, node_stack)
         else:  # Error
@@ -75,6 +75,7 @@ def shift_func(action_number, state_stack, buffer, node_stack):
 
 
 def reduce_func(action_number, state_stack, node_stack):
+
     # Get the production rule to be reduced
     production_RHS = production_table.loc[action_number, 'RHS']
     production_LHS = production_table.loc[action_number, 'LHS']
@@ -89,12 +90,20 @@ def reduce_func(action_number, state_stack, node_stack):
 
     # Remove state from the state_stack and link child nodes with parent node
     for _ in range(production_len):
-        state_stack.pop()
-        node_stack[-1].parent = parent
-        node_stack.pop()
+        if state_stack:  # Check if the stack is not empty
+            state_stack.pop()
+            node_stack[-1].parent = parent
+            node_stack.pop()
+        else:
+            print("Error: Trying to pop from an empty stack!", file = sys.stderr)
+            return
 
     # Append current parent node to the stack (current parent node also can be child node)
     node_stack.append(parent)
+
+    if not state_stack:  # Check if the stack is empty
+        print("Error: Trying to pop from an empty stack!", file=sys.stderr)
+        return
 
     # GOTO func.
     next_state = parse_table.loc[state_stack[-1], production_LHS]
