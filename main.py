@@ -2,7 +2,6 @@
 
 import sys
 import pandas as pd
-from dataclasses import dataclass
 
 
 # Get SLR parse table
@@ -80,6 +79,7 @@ def reduce_func(action_number, stack):
         for _ in range(production_len):
             stack.pop()
 
+    # GOTO func.
     next_state = parse_table.loc[stack[-1], production_LHS]
     stack.append(next_state)
 
