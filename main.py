@@ -2,6 +2,7 @@
 
 import sys
 import pandas as pd
+from anytree import Node, RenderTree
 from dataclasses import dataclass
 
 
@@ -29,6 +30,7 @@ def main(input_file):
     # Initialize stack and buffer
     stack = [0]
     buffer = tokens + ["$"]
+    node_stack = []
 
     # Parsing
     while True:
@@ -41,31 +43,35 @@ def main(input_file):
 
         if action == "acc":  # Accept
             print("Accept")
+            for pre, _, node in RenderTree(node_stack[-1]):
+                print(f'{pre}{node.name}')
             break
 
         action_type = action[0]
         action_number = int(action[1:])
 
         if action_type == 's':  # Shift
-            shift_func(action_number, stack, buffer)
+            shift_func(action_number, stack, buffer, node_stack)
         elif action_type == 'r':  # Reduce
-            reduce_func(action_number, stack)
+            reduce_func(action_number, stack, node_stack)
         else:  # Error
             print("Parsing failed.")
             # print(f, "{next_input_symbol} has error.")
             break
 
 
-def shift_func(action_number, stack, buffer):
+def shift_func(action_number, stack, buffer, node_stack):
     # Append the state number to the stack
     stack.append(action_number)
+
+    node_stack.append(Node(buffer[0]))
 
     # Move the spliter
     # Remove the first symbol from the buffer
     buffer.pop(0)
 
 
-def reduce_func(action_number, stack):
+def reduce_func(action_number, stack, node_stack):
     # Get the production rule to be reduced
     production_RHS = production_table.loc[action_number, 'RHS']
     production_LHS = production_table.loc[action_number, 'LHS']
@@ -75,10 +81,16 @@ def reduce_func(action_number, stack):
     if production_RHS == "''":
         production_len = 0
 
+    parent = Node(production_LHS)
+
     # Remove state from the stack
     if production_len != 0:
         for _ in range(production_len):
             stack.pop()
+            node_stack[-1].parent = parent
+            node_stack.pop()
+
+    node_stack.append(parent)
 
     next_state = parse_table.loc[stack[-1], production_LHS]
     stack.append(next_state)
