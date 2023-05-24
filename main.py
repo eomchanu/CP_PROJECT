@@ -19,7 +19,6 @@ def main(input_file):
     # Split contents by whitespace to get tokens
     tokens = contents.split()
 
-    # print(parse_table)
     # Initialize state stack and buffer
     state_stack = [0]
     buffer = tokens + ["$"]
@@ -42,10 +41,8 @@ def main(input_file):
             print(f"REJECT!! Can't look up [{current_state},{next_input_symbol}] on SLR parsing table.")
             break
 
-        print(action)
-
         if action == "acc":  # Accept
-            print("Accept")
+            print("ACCEPT!!")
             for pre, _, node in RenderTree(node_stack[-1]):
                 print(f'{pre}{node.name}')
             break
