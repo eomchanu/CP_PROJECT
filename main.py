@@ -45,6 +45,7 @@ def main(input_file):
 
         if action == "acc":  # Accept
             print("ACCEPT!!")
+            print("--------------[Parse Tree]--------------")
             # Print Parse Tree
             for pre, _, node in RenderTree(node_stack[-1]):
                 print(f'{pre}{node.name}')
